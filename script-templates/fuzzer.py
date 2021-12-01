@@ -2,11 +2,11 @@
 
 import socket, time, sys
 
-rhost = "RHOST"
+rhost = "RHOST"             # Target IP
 
-rport = RPORT
+rport = RPORT               # Target Port (int format)
 timeout = 5
-prefix = "PREFIX "
+prefix = "PREFIX "          # Target Prefix/Command to attack/fuzz (user input, i.e. 'USER ')
 
 string = prefix + "A" * 100
 
