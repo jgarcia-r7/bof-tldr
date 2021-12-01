@@ -8,9 +8,11 @@ TLDR for Buffer Overflows...
 ```bash
 !mona config -set workingfolder C:\logs\%p
 ```
+- NOTE: You should know that **mona.py** is to be installed by downloading the **mona.py** script from https://github.com/corelan/mona and dropping it in the **PyCommands** folder (located in the installation folder of Immunity Debugger).
 
 ###### Fuzzing
 - Determine the RHOST/RPORT of the target box with the running application.
+- Determine the PREFIX (i.e. the command that accepts user input and will be the target for the overflow).
 - Use the **fuzzer.py** template to configure a fuzzing script with Python3.
 - Run the script against the target application, make note of when the app crashes (byte length + 400 extra bytes).
 
@@ -18,7 +20,7 @@ TLDR for Buffer Overflows...
 - Create your initial **exploit.py** script following the template.
 - Generate a unique pattern equal to the length of bytes when the application crashed, you can do this with Metasploit's **pattern_create**.
 ```bash
-pattern_create -l <length_of_bytes>
+/usr/share/metasploit-framework/exploit/tools/pattern_create -l <length_of_bytes>
 ```
 - Set the **payload** variable in the exploit script equal to the unique pattern.
 - Run it against the application and with **mona.py** (in Immunity Debugger), determine the offset.
@@ -28,6 +30,10 @@ pattern_create -l <length_of_bytes>
 - The offset will be outlined as 'xxxx':
 ```txt
 EIP contains normal pattern : 0x000000 (offset xxxx)
+```
+- You can also determine the offset with Metasploit's **pattern_offset** (reference the EIP value in Immunity Debugger).
+```bash
+/usr/share/metasploit-framework/exploit/tools/pattern_offset -q <EIP>
 ```
 - Test that you can control the **EIP** now, to do this, modify your exploit script to include the value of the **offset** in its respectable variable.
 - Modify the **retn** variable to 'BBBB' and the **payload** variable to an empty string.
@@ -44,10 +50,10 @@ EIP contains normal pattern : 0x000000 (offset xxxx)
 !mona compare -f C:\logs\<prgoram>\bytearray.bin -a <ESP_address>
 ```
 - This will give you a list of all the badchars found, some may not be badchars however (remove the initial badchars first). Now generate a new bytearray with the badchars removed, update your script's **payload** variable to match, send it again and repeat this process until **mona.py**'s output is 'unmodified'.
-- NOTE: You can also just review the **Hex dump** manually instead of using **mona.py** for identifying badchars.
+- NOTE: You can also just review the **Hex dump** manually instead of using **mona.py** for identifying badchars. I **HIGHLY RECOMMEND** you learn to do it this way, as you will more easily find the initial (and likely only) badchars this way.
 
 ###### Finding Jump Point
-- With **mona.py** we can a find 'jump point' **JMP ESP**, make sure to exclude the badchars identified when doing this.
+- With **mona.py** we can a find the 'jump point' **JMP ESP**, make sure to exclude the badchars identified when doing this (with `-cpb`).
 ```bash
 !mona jmp -r esp -cpb "\x00"
 ```
